@@ -1,11 +1,9 @@
 
 # LeapIO: Efficient and Portable Virtual NVMe Storage on ARM SoCs
 
-Currently, MSR is maintaining the LeapIO code base. If you are interested, feel
-free to contact Anirudh Badam (anirudh.badam@microsoft.com) to get access.
-Please also feel free to contact Huaicheng Li (hcli@cmu.edu) for any questions.
+Ok, code will be released soon, please stay tuned! ... Feel free to contact Huaicheng Li (hcli@cmu.edu) for any questions.
 
-Consider citing LeapIO using the following bib entry:
+Consider citing LeapIO using the following bib entry if you find our paper useful:
 
 ```
 @InProceedings{li2020leapio,
