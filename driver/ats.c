@@ -30,7 +30,7 @@ int wpt_follow_phys(struct mm_struct *mm, unsigned long address, u64 *phys);
 
 static bool memslot_is_readonly(struct kvm_memory_slot *slot)
 {
-	return slot->flags & KVM_MEM_READONLY;
+    return slot->flags & KVM_MEM_READONLY;
 }
 
 static unsigned long __gfn_to_hva_many(struct kvm_memory_slot *slot, gfn_t gfn,
@@ -1119,49 +1119,49 @@ int ats_map_vqp(struct wpt *wpt, struct wpt_qp *qp)
 #ifdef MULTI_QP_PER_VHD
 int ats_map_vqp_db(struct wpt *wpt, struct wpt_qp *qp)
 {
-	int i, ret;
-	int ats_qid;
-	int qidx, qidx_soc;
-	int stride = 1;
+    int i, ret;
+    int ats_qid;
+    int qidx, qidx_soc;
+    int stride = 1;
 
-	struct nvme_qpair *vqp;
-	struct ats *ats = wpt->ats;
-	struct wpt_qp_data *qdata = qp->data;
+    struct nvme_qpair *vqp;
+    struct ats *ats = wpt->ats;
+    struct wpt_qp_data *qdata = qp->data;
 
-	/* Doorbell base address */
-	unsigned long dbpfn = qp->data->q_baddr[0];
+    /* Doorbell base address */
+    unsigned long dbpfn = qp->data->q_baddr[0];
 
-	/* When mapping DBs, QID should be equal to 0 */
-	BUG_ON(qdata->q_id != 0);
+    /* When mapping DBs, QID should be equal to 0 */
+    BUG_ON(qdata->q_id != 0);
 
-	/* Map the doorbell memory into the VM */
-	ret = ats_reinit_dbbuf(wpt, dbpfn, 1);
-	if(ret) {
-		return ret;
-	}
+    /* Map the doorbell memory into the VM */
+    ret = ats_reinit_dbbuf(wpt, dbpfn, 1);
+    if(ret) {
+        return ret;
+    }
 
-	for(i = 0; i < wpt->ndbvms; i++) {
-		vqp = &ats->vqps[i];
-		ats_qid = vqp->qid;
+    for(i = 0; i < wpt->ndbvms; i++) {
+        vqp = &ats->vqps[i];
+        ats_qid = vqp->qid;
 
-		printk("Mapping dbells for vQP with ID %d\n", ats_qid);
+        printk("Mapping dbells for vQP with ID %d\n", ats_qid);
 
-		/* Shouldn't have dbells mapped already */
-		BUG_ON(*(vqp->sp_db) != 0);
+        /* Shouldn't have dbells mapped already */
+        BUG_ON(*(vqp->sp_db) != 0);
 
-		/* Compute offsets */
-		qidx = sq_idx(vqp->qid, stride);
-		qidx_soc = sq_idx_soc(vqp->qid, stride);
+        /* Compute offsets */
+        qidx = sq_idx(vqp->qid, stride);
+        qidx_soc = sq_idx_soc(vqp->qid, stride);
 
-		/* Map SQ/CQ doorbells */
-		vqp->sq_db = &(ats->dbbuf[0][qidx]);
-		vqp->cq_db = vqp->sq_db + 1;
-		vqp->sq_db_soc = &(ats->dbbuf[0][qidx_soc]);
+        /* Map SQ/CQ doorbells */
+        vqp->sq_db = &(ats->dbbuf[0][qidx]);
+        vqp->cq_db = vqp->sq_db + 1;
+        vqp->sq_db_soc = &(ats->dbbuf[0][qidx_soc]);
 
-		ats_update_vqp_state(vqp, qp->data->q_type);
-	}
+        ats_update_vqp_state(vqp, qp->data->q_type);
+    }
 
-	return 0;
+    return 0;
 }
 
 #else
