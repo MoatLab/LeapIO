@@ -131,14 +131,15 @@ static void *res_ptr = NULL;
 #ifdef SNAPSHOTS
 using namespace std;
 
-struct pair_hash {
-	template <class T1, class T2>
-		std::size_t operator () (const std::pair<T1,T2> &p) const {
-		auto h1 = std::hash<T1>{}(p.first);
-		auto h2 = std::hash<T2>{}(p.second);
+struct pair_hash
+{
+    template <class T1, class T2>
+        std::size_t operator () (const std::pair<T1,T2> &p) const {
+            auto h1 = std::hash<T1>{}(p.first);
+            auto h2 = std::hash<T2>{}(p.second);
 
-		return h1 ^ h2;
-	}
+            return h1 ^ h2;
+        }
 };
 
 static unordered_map<pair<unsigned long, unsigned long>, struct nvme_req *, pair_hash> log_reqs;
@@ -2725,7 +2726,6 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
                 break;
 #endif
 
-
 #ifdef ABC
             //if(hash_cache.find(req->cmd.rw.slba) == hash_cache.end()) {
             uint8_t *addr;
@@ -4620,40 +4620,39 @@ void *server_poller_ts(void *arg)
 
 
 #ifdef PSCHEDULE
-// init priority scheduling
+/* init priority scheduling */
 void sched_init(struct leap *leap)
 {
-	leap->pr_cnt[0].current = 0;
-	leap->pr_cnt[0].max = PR0;
+    leap->pr_cnt[0].current = 0;
+    leap->pr_cnt[0].max = PR0;
 
-	leap->pr_cnt[1].current = 0;
-	leap->pr_cnt[1].max = PR1;
+    leap->pr_cnt[1].current = 0;
+    leap->pr_cnt[1].max = PR1;
 }
 #endif
-
 
 /* single threaded client or server */
 int leap_init_poller(struct leap *leap)
 {
 #ifdef PSCHEDULE
-	sched_init(leap);
+    sched_init(leap);
 #endif
 
 #ifdef ABC
-	// allocate 3MB for Azure Blob Cache
-	abc_init(3 * 1024 * 1024);
+    // allocate 3MB for Azure Blob Cache
+    abc_init(3 * 1024 * 1024);
 #endif
 
     if (leap->role == SOCK_SERVER) {
-	    leap->submitter = create_worker(server_poller_ts, leap);
+        leap->submitter = create_worker(server_poller_ts, leap);
     } else if (leap->role == SOCK_CLIENT) {
-	    leap->submitter = create_worker(client_poller_ts, leap);
+        leap->submitter = create_worker(client_poller_ts, leap);
     } else if(leap->role == SOCK_AZURE) {
-	    leap->submitter = create_worker(client_poller_ts, leap);
+        leap->submitter = create_worker(client_poller_ts, leap);
     }
 
     if (!leap->submitter) {
-	    return -1;
+        return -1;
     }
 
     return 0;
@@ -5331,53 +5330,52 @@ void server_map_dmabuf(struct leap *leap)
 int leap_setup_azure_drive(struct leap *leap, int argc, char** argv)
 {
 #if defined(__x86_64__)
-	if(argc != 6) {
-		usage();
-	}
+    if (argc != 6) {
+        usage();
+    }
 
-	leap->m_conn_string.assign(argv[3]);
-	leap->m_vhd_name.assign(argv[4]);
-	try {
-		quantum_leap::qls_azure_drive::create_drive(leap->m_conn_string,
-							    leap->m_vhd_name,
-							    (size_t)strtoull(argv[5],
-									     NULL, 10));
+    leap->m_conn_string.assign(argv[3]);
+    leap->m_vhd_name.assign(argv[4]);
+    try {
+        quantum_leap::qls_azure_drive::create_drive(leap->m_conn_string,
+                leap->m_vhd_name,
+                (size_t)strtoull(argv[5],
+                    NULL, 10));
 
-		leap->m_azure_drive = new quantum_leap::qls_azure_drive(leap->m_conn_string,
-									leap->m_vhd_name);
-	}catch(std::exception e)
-		 {
-			 return -1;
-		 }
+        leap->m_azure_drive = new quantum_leap::qls_azure_drive(leap->m_conn_string,
+                leap->m_vhd_name);
+    } catch(std::exception e)
+    {
+        return -1;
+    }
 
-	return 0;
+    return 0;
 #else
-	if(argc != 8) {
-		usage();
-	}
+    if (argc != 8) {
+        usage();
+    }
 
-	leap->m_conn_string.assign(argv[5]);
-	leap->m_vhd_name.assign(argv[6]);
-	try {
-		quantum_leap::qls_azure_drive::create_drive(leap->m_conn_string,
-							    leap->m_vhd_name,
-							    (size_t)strtoull(argv[7],
-									     NULL, 10));
+    leap->m_conn_string.assign(argv[5]);
+    leap->m_vhd_name.assign(argv[6]);
+    try {
+        quantum_leap::qls_azure_drive::create_drive(leap->m_conn_string,
+                leap->m_vhd_name,
+                (size_t)strtoull(argv[7],
+                    NULL, 10));
 
-		debug("leap_setup_azure_drive: create new Azure drive\n");
+        debug("leap_setup_azure_drive: create new Azure drive\n");
 
-		leap->m_azure_drive = new quantum_leap::qls_azure_drive(leap->m_conn_string,
-									leap->m_vhd_name);
-		debug("leap_setup_azure_drive: create new Azure drive, instantiate\n");
-	}catch(std::exception e)
-		 {
-			 return -1;
-		 }
+        leap->m_azure_drive = new quantum_leap::qls_azure_drive(leap->m_conn_string,
+                leap->m_vhd_name);
+        debug("leap_setup_azure_drive: create new Azure drive, instantiate\n");
+    } catch(std::exception e)
+    {
+        return -1;
+    }
 
-	return 0;
+    return 0;
 #endif
 }
-
 
 /* TODO: recheck error handling path */
 int main(int argc, char **argv)
@@ -5406,14 +5404,14 @@ int main(int argc, char **argv)
 
     // set up the Azure storage drive
     if(leap->role == SOCK_AZURE) {
-	    ret = leap_setup_azure_drive(leap, argc, argv);
+        ret = leap_setup_azure_drive(leap, argc, argv);
 
-	    if(ret) {
-		    printf("Coperd,%s,setup_azure_Drive failed\n", __func__);
-		    goto err_setup_endpoint;
-	    }
+        if(ret) {
+            printf("Coperd,%s,setup_azure_Drive failed\n", __func__);
+            goto err_setup_endpoint;
+        }
 
-	    debug("main: created Azure drive\n");
+        debug("main: created Azure drive\n");
     }
 
 #if 1
@@ -5433,51 +5431,51 @@ int main(int argc, char **argv)
     }
 
     if ((leap->role == SOCK_CLIENT) || (leap->role == SOCK_AZURE)) {
-	    if ((leap->transport == LEAP_PCIE) || (leap->transport == LEAP_AZURE) ||
-		(leap->transport == LEAP_TCP)) {
-		    /* Coperd: Let's do RDMA setup for vQP routing here */
-		    if (leap->use_rdma_for_vqp) {
-			    leap_setup_rdma_endpoint_pcie(leap);
+        if ((leap->transport == LEAP_PCIE) || (leap->transport == LEAP_AZURE) ||
+                (leap->transport == LEAP_TCP)) {
+            /* Coperd: Let's do RDMA setup for vQP routing here */
+            if (leap->use_rdma_for_vqp) {
+                leap_setup_rdma_endpoint_pcie(leap);
 
-			    /*
-			     * Coperd: if this runs on SVK, then we need to map DMABUF
-			     * initialize dmabuf for server use
-			     */
-			    server_map_dmabuf(leap);
-			    //leap->dmabuf = get_dmabuf_addr_base(leap);
+                /*
+                 * Coperd: if this runs on SVK, then we need to map DMABUF
+                 * initialize dmabuf for server use
+                 */
+                server_map_dmabuf(leap);
+                //leap->dmabuf = get_dmabuf_addr_base(leap);
 #if !defined(__x86_64__)
-			    assert(leap->dmabuf);
-			    leap_server_dmabuf_init(leap);
+                assert(leap->dmabuf);
+                leap_server_dmabuf_init(leap);
 #endif
-			    /*
-			     * For LocalSSD, client manages both vQP and pQP
-			     */
-			    //#ifndef CORE_IOPS_TEST		
-			    leap_init_pqps(leap);
-			    //#endif
-		    } else {
-			    leap_init_pqps(leap);
-		    }
-	    } else if (leap->transport == LEAP_RDMA) {
-		    /*
-		     * For RDMASSD: we need malloc data buffer as RDMA doesn't allow
-		     * ibv_reg_mr over BAR memory (where we map host physical memory)
-		     */
-		    leap_client_rdmabuf_init(leap);
-	    }
+                /*
+                 * For LocalSSD, client manages both vQP and pQP
+                 */
+                //#ifndef CORE_IOPS_TEST		
+                leap_init_pqps(leap);
+                //#endif
+            } else {
+                leap_init_pqps(leap);
+            }
+        } else if (leap->transport == LEAP_RDMA) {
+            /*
+             * For RDMASSD: we need malloc data buffer as RDMA doesn't allow
+             * ibv_reg_mr over BAR memory (where we map host physical memory)
+             */
+            leap_client_rdmabuf_init(leap);
+        }
 
-	    if ((leap->transport == LEAP_STRIPE) || (leap->transport == LEAP_RAID1)) {
-		    printf("setting up rdmabufs\n");
-		    leap_client_rdmabuf_init(leap);
-		    printf("setting up pqps\n");
-		    leap_init_pqps_stripe(leap);
-	    }
+        if ((leap->transport == LEAP_STRIPE) || (leap->transport == LEAP_RAID1)) {
+            printf("setting up rdmabufs\n");
+            leap_client_rdmabuf_init(leap);
+            printf("setting up pqps\n");
+            leap_init_pqps_stripe(leap);
+        }
 
-	    printf("setting up vqps\n");
+        printf("setting up vqps\n");
 
-	    /* Coperd: init vQP structure members */
-	    leap_init_vqps(leap);
-	    printf("Coperd,init_vqps done\n");
+        /* Coperd: init vQP structure members */
+        leap_init_vqps(leap);
+        printf("Coperd,init_vqps done\n");
     } else if (leap->role == SOCK_SERVER) {
         /* initialize dmabuf for server use */
         server_map_dmabuf(leap);
