@@ -363,25 +363,25 @@ int wpt_rdma_init(struct rctx *rctx)
 
 void wpt_rdma_deinit(struct rctx *rctx)
 {
-	pr_info("[LeapIO] rdma_disconnect\n");
-	rdma_disconnect(rctx->cm_id);
-	pr_info("[LeapIO] rdma_disconnect(ed)\n");
+    pr_info("[LeapIO] rdma_disconnect\n");
+    rdma_disconnect(rctx->cm_id);
+    pr_info("[LeapIO] rdma_disconnect(ed)\n");
 
-	pr_info("[LeapIO] ib_destroy_qp\n");
-	ib_destroy_qp(rctx->qp);
-	pr_info("[LeapIO] ib_destroy(ed)_qp\n");
+    pr_info("[LeapIO] ib_destroy_qp\n");
+    ib_destroy_qp(rctx->qp);
+    pr_info("[LeapIO] ib_destroy(ed)_qp\n");
 
-	pr_info("[LeapIO] ib_destroy_cq\n");
-	ib_destroy_cq(rctx->cq);
-	pr_info("[LeapIO] ib_destroy(ed)_cq\n");
+    pr_info("[LeapIO] ib_destroy_cq\n");
+    ib_destroy_cq(rctx->cq);
+    pr_info("[LeapIO] ib_destroy(ed)_cq\n");
 
-	pr_info("[LeapIO] ib_dealloc_pd\n");
-	ib_dealloc_pd(rctx->pd);
-	pr_info("[LeapIO] ib_dealloc(ed)_pd\n");
+    pr_info("[LeapIO] ib_dealloc_pd\n");
+    ib_dealloc_pd(rctx->pd);
+    pr_info("[LeapIO] ib_dealloc(ed)_pd\n");
 
-	pr_info("[LeapIO] rdma_destroy_id\n");
-	rdma_destroy_id(rctx->cm_id);
-	pr_info("[LeapIO] rdma_destroy(ed)_id\n");
+    pr_info("[LeapIO] rdma_destroy_id\n");
+    rdma_destroy_id(rctx->cm_id);
+    pr_info("[LeapIO] rdma_destroy(ed)_id\n");
 }
 
 int wpt_setup_wrs(struct rctx *rctx)
