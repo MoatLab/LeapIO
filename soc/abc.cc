@@ -18,7 +18,8 @@ using namespace std;
 /* data cache. can be registered with RDMA for zero copy */
 uint8_t *cache_data;
 
-struct cache_entry {
+struct cache_entry
+{
 	uint8_t *data;
 	unsigned long lba;
 	bool valid;
@@ -35,51 +36,51 @@ static struct cache_entry *tail = NULL;
 
 void abc_init(unsigned long size)
 {
-	abc_debug("abc_init\n");
+    abc_debug("abc_init\n");
 
-	cache_data = (uint8_t *)malloc(size);
-	cache_size_lba = size / 1024 / 4;
+    cache_data = (uint8_t *)malloc(size);
+    cache_size_lba = size / 1024 / 4;
 
-	abc_debug("allocated: %lu LBAs; base addr %lu\n",
-		  cache_size_lba, (unsigned long)cache_data);
+    abc_debug("allocated: %lu LBAs; base addr %lu\n",
+            cache_size_lba, (unsigned long)cache_data);
 }
 
 void abc_deinit()
 {
-	free(cache_data);
+    free(cache_data);
 }
 
 void abc_print_list()
 {
-	struct cache_entry *entry = tail;
+    struct cache_entry *entry = tail;
 
-	abc_debug("Printing all LBAs: ");
-	fflush(stdout);
+    abc_debug("Printing all LBAs: ");
+    fflush(stdout);
 
-	while (entry != NULL) {
-		abc_debug("%lu ", entry->lba);
-		fflush(stdout);
-		entry = entry->next;
-	}
+    while (entry != NULL) {
+        abc_debug("%lu ", entry->lba);
+        fflush(stdout);
+        entry = entry->next;
+    }
 
-	abc_debug("\n");
+    abc_debug("\n");
 
-	entry = head;
-	abc_debug("Printing all LBAs in reverse: ");
-	fflush(stdout);
+    entry = head;
+    abc_debug("Printing all LBAs in reverse: ");
+    fflush(stdout);
 
-	while (entry != NULL) {
-		abc_debug("%lu ", entry->lba);
-		fflush(stdout);
-		entry = entry->prev;
-	}
+    while (entry != NULL) {
+        abc_debug("%lu ", entry->lba);
+        fflush(stdout);
+        entry = entry->prev;
+    }
 
-	abc_debug("\n");
+    abc_debug("\n");
 }
 
 bool abc_is_block_cached(unsigned long lba, uint8_t **addr)
 {
-	//abc_print_list();
+    //abc_print_list();
 
     if (cache_map.find(lba) != cache_map.end()) {
         abc_debug("CACHE HIT\n");
@@ -104,83 +105,83 @@ bool abc_is_block_cached(unsigned long lba, uint8_t **addr)
         return true;
     }
 
-	abc_debug("CACHE MISS\n");
+    abc_debug("CACHE MISS\n");
 
-	return false;
+    return false;
 }
 
 /* get block entry for this lba */
 void abc_get_block_entry(unsigned long lba, uint8_t **addr)
 {
-	//abc_print_list();
+    //abc_print_list();
 
-	abc_debug("abc_get_block_entry\n");
+    abc_debug("abc_get_block_entry\n");
 
-	if (current_lba < cache_size_lba) {
-		abc_debug("caching block number: %lu\n", current_lba);
+    if (current_lba < cache_size_lba) {
+        abc_debug("caching block number: %lu\n", current_lba);
 
-		/* cache not consumed */
-		if (head == NULL) {
-			abc_debug("first element to cache\n");
+        /* cache not consumed */
+        if (head == NULL) {
+            abc_debug("first element to cache\n");
 
-			/* first element to cache */
-			head = (cache_entry *)malloc(sizeof(cache_entry));
+            /* first element to cache */
+            head = (cache_entry *)malloc(sizeof(cache_entry));
 
-			head->next = NULL;
-			head->prev = NULL;
+            head->next = NULL;
+            head->prev = NULL;
 
-			head->data = &cache_data[current_lba * LBA_SIZE];
-			tail = head;
+            head->data = &cache_data[current_lba * LBA_SIZE];
+            tail = head;
 
-		} else {
-			abc_debug("non-first element to cache\n");
+        } else {
+            abc_debug("non-first element to cache\n");
 
-			head->next = (cache_entry *)malloc(sizeof(cache_entry));
-			struct cache_entry *tmp = head;
-			head = head->next;
-			head->prev = tmp;
+            head->next = (cache_entry *)malloc(sizeof(cache_entry));
+            struct cache_entry *tmp = head;
+            head = head->next;
+            head->prev = tmp;
 
-			head->next = NULL;
-			head->data = &cache_data[current_lba * LBA_SIZE];
-		}
+            head->next = NULL;
+            head->data = &cache_data[current_lba * LBA_SIZE];
+        }
 
-		/* returning address of the head data */
-		*addr = head->data;
-		head->lba = lba;
-		head->valid = false;
-		cache_map.insert(make_pair(lba, head));
+        /* returning address of the head data */
+        *addr = head->data;
+        head->lba = lba;
+        head->valid = false;
+        cache_map.insert(make_pair(lba, head));
 
-		current_lba += 1;
-	} else {
-		abc_debug("reusing least recently used block\n");
+        current_lba += 1;
+    } else {
+        abc_debug("reusing least recently used block\n");
 
-		struct cache_entry *new_head = head->prev;
+        struct cache_entry *new_head = head->prev;
 
-		head->next = tail;
-		head->prev = NULL;
-		tail->prev = head;
+        head->next = tail;
+        head->prev = NULL;
+        tail->prev = head;
 
-		tail = head;
-		head = new_head;
-		head->next = NULL;
+        tail = head;
+        head = new_head;
+        head->next = NULL;
 
-		/* returning address of the tail data */
-		*addr = tail->data;
+        /* returning address of the tail data */
+        *addr = tail->data;
 
-		/* remove old lba from map and insert new one */
-		cache_map.erase(tail->lba);
-		tail->lba = lba;
-		tail->valid = false;
-		cache_map.insert(make_pair(lba, tail));
-	}
+        /* remove old lba from map and insert new one */
+        cache_map.erase(tail->lba);
+        tail->lba = lba;
+        tail->valid = false;
+        cache_map.insert(make_pair(lba, tail));
+    }
 }
 
 /* content copied into the cache, set valid */
 void abc_set_valid(unsigned long lba)
 {
-	if (cache_map.find(lba) == cache_map.end()) {
-		abc_debug("error: element not found in cache\n");
-	} else {
-		cache_map[lba]->valid = true;
-	}
+    if (cache_map.find(lba) == cache_map.end()) {
+        abc_debug("error: element not found in cache\n");
+    } else {
+        cache_map[lba]->valid = true;
+    }
 }

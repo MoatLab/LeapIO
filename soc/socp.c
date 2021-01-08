@@ -2216,54 +2216,53 @@ static void client_submitter_raid1_process_pending_reqs(struct nvme_qpair *vqp)
 }
 
 
-// translate NVMe commands to Azure blob requests
+/* translate NVMe commands to Azure blob requests */
 static void client_submitter_azure_process_pending_reqs(struct nvme_qpair *vqp)
 {
-	int nprocessed = 0;
-	nvme_req *req = NULL;
+    int nprocessed = 0;
+    nvme_req *req = NULL;
 
-	while(nprocessed++ < MAX_BATCH_SZ) {
-		if (QTAILQ_EMPTY(&(vqp->submitter_pending_req_list))) {
-			return;
-		}
-		req = QTAILQ_FIRST(&(vqp->submitter_pending_req_list));
-		assert(req);
+    while (nprocessed++ < MAX_BATCH_SZ) {
+        if (QTAILQ_EMPTY(&(vqp->submitter_pending_req_list))) {
+            return;
+        }
+        req = QTAILQ_FIRST(&(vqp->submitter_pending_req_list));
+        assert(req);
 
 #ifdef DEBUG_PQP
-		printf("this LBA: %lu\n", req->cmd.rw.slba);
+        printf("this LBA: %lu\n", req->cmd.rw.slba);
 #endif
 
-		req->cmd_bytes = NVME_CMD_SZ;
+        req->cmd_bytes = NVME_CMD_SZ;
 
-		debug("client_submitter_azure: op at %lu with count %lu\n",
-		      req->cmd.rw.slba * 4096, req->iovcnt);
+        debug("client_submitter_azure: op at %lu with count %lu\n",
+                req->cmd.rw.slba * 4096, req->iovcnt);
 
-		vqp->m_drive->enqueue_command(req->cmd.rw.opcode == NVME_CMD_READ?true:false,
-					      req->cmd.rw.slba * 4096,
-					      req->iov,
-					      req->iovcnt,
-					      req->cmd.rw.cid);
-		debug("client_submitter_azure: enqueued new azure command, CID=%u\n",
-		      req->cmd.rw.cid);
+        vqp->m_drive->enqueue_command(req->cmd.rw.opcode == NVME_CMD_READ?true:false,
+                req->cmd.rw.slba * 4096,
+                req->iov,
+                req->iovcnt,
+                req->cmd.rw.cid);
+        debug("client_submitter_azure: enqueued new azure command, CID=%u\n",
+                req->cmd.rw.cid);
 
-		assert(req->status == IN_SUBMITTER_P_LIST);
-		QTAILQ_REMOVE(&vqp->submitter_pending_req_list, req, entry);
+        assert(req->status == IN_SUBMITTER_P_LIST);
+        QTAILQ_REMOVE(&vqp->submitter_pending_req_list, req, entry);
 
 #if defined(__x86_64__)
-		int rc;
-		rc = femu_ring_enqueue(vqp->s2c_rq, (void **)&req, 1);
-		if (rc != 1) {
-			abort();
-		}
+        int rc;
+        rc = femu_ring_enqueue(vqp->s2c_rq, (void **)&req, 1);
+        if (rc != 1) {
+            abort();
+        }
 #else
-		/* Use a list */
-		QTAILQ_INSERT_TAIL(&vqp->s2c_list, req, entry);
+        /* Use a list */
+        QTAILQ_INSERT_TAIL(&vqp->s2c_list, req, entry);
 #endif
-	}
+    }
 
-	debug("exiting client_submitter_azure");
+    debug("exiting client_submitter_azure");
 }
-
 
 /* Reset nvme_req except keeping ->id and ->iov fields */
 static inline void client_reset_req(nvme_req *req)
@@ -2340,17 +2339,17 @@ nvme_req *get_req_by_id(struct nvme_qpair *qp, int id)
 
 
 #ifdef PSCHEDULE
-// check if we should exit QP entry forwarding
+/* check if we should exit QP entry forwarding */
 int sched_sq_yield(struct leap *leap, int pr, int completed)
 {
-	leap->pr_cnt[pr].current += completed;
+    leap->pr_cnt[pr].current += completed;
 
-	if(leap->pr_cnt[pr].current >= leap->pr_cnt[pr].max) {
-		debug("reached maximum, need to exit\n");
-		return 1;
-	}
+    if(leap->pr_cnt[pr].current >= leap->pr_cnt[pr].max) {
+        debug("reached maximum, need to exit\n");
+        return 1;
+    }
 
-	return 0;
+    return 0;
 }
 #endif
 
@@ -2358,15 +2357,15 @@ int sched_sq_yield(struct leap *leap, int pr, int completed)
 #ifdef SNAPSHOTS
 void convert_vcmd_to_pcmd_soc(nvme_req *req, nvme_req *rreq)
 {
-	/* Coperd: new req, cleanup the nvme_req structure first */
-	//client_reset_req(req);
-	server_reset_req(req);
+    /* Coperd: new req, cleanup the nvme_req structure first */
+    //client_reset_req(req);
+    server_reset_req(req);
 
-	/* Coperd: copy 64B command to corresponding req */
-	memcpy(&req->cmd, rreq->cmdbuf, NVME_CMD_SZ);
+    /* Coperd: copy 64B command to corresponding req */
+    memcpy(&req->cmd, rreq->cmdbuf, NVME_CMD_SZ);
 #ifdef DEBUG_VQP
-	printf("Coperd,%s,%d: ", __func__, __LINE__);
-	print_nvmecmd(&req->cmd);
+    printf("Coperd,%s,%d: ", __func__, __LINE__);
+    print_nvmecmd(&req->cmd);
 #endif
 
 }
@@ -2382,10 +2381,10 @@ void convert_vcmd_to_pcmd(nvme_req *req, struct nvme_command *vcmd)
 
 void submit_to_pending_req_list(nvme_req *req, struct nvme_qpair *vqp)
 {
-	assert(req && req->status == IN_REQ_LIST);
-	QTAILQ_REMOVE(&vqp->req_list, req, entry);
-	QTAILQ_INSERT_TAIL(&vqp->submitter_pending_req_list, req, entry);
-	req->status = IN_SUBMITTER_P_LIST;
+    assert(req && req->status == IN_REQ_LIST);
+    QTAILQ_REMOVE(&vqp->req_list, req, entry);
+    QTAILQ_INSERT_TAIL(&vqp->submitter_pending_req_list, req, entry);
+    req->status = IN_SUBMITTER_P_LIST;
 }
 #endif
 
@@ -2618,7 +2617,7 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
             cid = ((struct nvme_command *)rreq->cmdbuf)->rw.cid;
             req = get_req_by_id(vqp, cid);
 
-	    // SNAPSHOT code starts here	    
+            // SNAPSHOT code starts here	    
 #ifdef SNAPSHOTS
             if(req->cmd.rw.opcode == NVME_CMD_READ) {
                 debug("snapshots: this is a read request\n");
@@ -2631,7 +2630,7 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
 
                 // add new version to the log
                 leap->log->add_version(req->iov, req->iovcnt, req->cmd.rw.slba * 4096,
-				       vqp->qid, cid); //vcmd->rw.cid);
+                        vqp->qid, cid); //vcmd->rw.cid);
 
             } else { // flush operation (modprobe nvme)
                 debug("snapshots: this is a flush operation\n");
@@ -2643,14 +2642,14 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
                 // Coperd: update vsq head
                 //vsq_inc_head(vqp);
 
-		/* Need to post another RDMA recv req over rreq->cmdbuf */
-		leap_client_post_recv2(vqp->rctx, rreq);
+                /* Need to post another RDMA recv req over rreq->cmdbuf */
+                leap_client_post_recv2(vqp->rctx, rreq);
 
-		/* fill iov and cid */
-		//client_parse_cmd(req);
-		server_prep_cmd(vqp, req);
-		/* Coperd: update vsq head */
-		//vsq_inc_head(vqp);
+                /* fill iov and cid */
+                //client_parse_cmd(req);
+                server_prep_cmd(vqp, req);
+                /* Coperd: update vsq head */
+                //vsq_inc_head(vqp);
 
                 // same qid-cid pair shouldn't exist
 
@@ -2670,21 +2669,21 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
             } else {
                 convert_vcmd_to_pcmd_soc(req, rreq);
                 //vsq_inc_head(vqp);
-		/* Need to post another RDMA recv req over rreq->cmdbuf */
-		leap_client_post_recv2(vqp->rctx, rreq);
+                /* Need to post another RDMA recv req over rreq->cmdbuf */
+                leap_client_post_recv2(vqp->rctx, rreq);
 
-		/* fill iov and cid */
-		//client_parse_cmd(req);
-		server_prep_cmd(vqp, req);
-		/* Coperd: update vsq head */
-		//vsq_inc_head(vqp);
+                /* fill iov and cid */
+                //client_parse_cmd(req);
+                server_prep_cmd(vqp, req);
+                /* Coperd: update vsq head */
+                //vsq_inc_head(vqp);
 
                 submit_to_pending_req_list(req, vqp);
             }
 
 #else
 
-	    /* Coperd: new req, cleanup the nvme_req structure first */
+            /* Coperd: new req, cleanup the nvme_req structure first */
             //client_reset_req(req);
             server_reset_req(req);
 
@@ -2703,10 +2702,10 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
             /* Coperd: update vsq head */
 
 #ifdef CORE_IOPS_TEST // LATEST
-	    vsq_inc_head(vqp);
+            vsq_inc_head(vqp);
 #else
-	    if((vqp->leap->transport == LEAP_AZURE) || (vqp->leap->transport == LEAP_TCP))
-		    vsq_inc_head(vqp);
+            if((vqp->leap->transport == LEAP_AZURE) || (vqp->leap->transport == LEAP_TCP))
+                vsq_inc_head(vqp);
 #endif
 
 
@@ -2728,189 +2727,187 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
 
 
 #ifdef ABC
-	    //if(hash_cache.find(req->cmd.rw.slba) == hash_cache.end()) {
-	    uint8_t *addr;
-	    if(!abc_is_block_cached(req->cmd.rw.slba, &addr)) {
-                    printf("[ABC] adding LBA %lu to the cache\n", req->cmd.rw.slba);
-                    //printf("hash cache: ID of this request %u\n", req->id);
+            //if(hash_cache.find(req->cmd.rw.slba) == hash_cache.end()) {
+            uint8_t *addr;
+            if (!abc_is_block_cached(req->cmd.rw.slba, &addr)) {
+                printf("[ABC] adding LBA %lu to the cache\n", req->cmd.rw.slba);
+                //printf("hash cache: ID of this request %u\n", req->id);
 
-                    // store req in htable for later processing
-                    //hash_cache.insert(make_pair(req->cmd.rw.slba, 1));
-		    abc_get_block_entry(req->cmd.rw.slba, &addr);
+                // store req in htable for later processing
+                //hash_cache.insert(make_pair(req->cmd.rw.slba, 1));
+                abc_get_block_entry(req->cmd.rw.slba, &addr);
 
-		    assert(req && req->status == IN_REQ_LIST);
-		    QTAILQ_REMOVE(&vqp->req_list, req, entry);
-		    QTAILQ_INSERT_TAIL(&vqp->submitter_pending_req_list, req, entry);
-		    req->status = IN_SUBMITTER_P_LIST;
+                assert(req && req->status == IN_REQ_LIST);
+                QTAILQ_REMOVE(&vqp->req_list, req, entry);
+                QTAILQ_INSERT_TAIL(&vqp->submitter_pending_req_list, req, entry);
+                req->status = IN_SUBMITTER_P_LIST;
 
-	    } else {
-		    assert(req && req->status == IN_REQ_LIST);
-		    QTAILQ_REMOVE(&vqp->req_list, req, entry);
+            } else {
+                assert(req && req->status == IN_REQ_LIST);
+                QTAILQ_REMOVE(&vqp->req_list, req, entry);
 
-		    debug("hash cache: CACHE HIT.. Azure lookup not required\n");
+                debug("hash cache: CACHE HIT.. Azure lookup not required\n");
 
-		    /* For vQP routing via RDMA */
-		    /* We need to send CPL back to WPT and it post completions for us */
-		    struct nvme_completion *cqe = &req->cpl;
+                /* For vQP routing via RDMA */
+                /* We need to send CPL back to WPT and it post completions for us */
+                struct nvme_completion *cqe = &req->cpl;
 
-		    /* Fake completion here */
-		    cqe->status = NVME_SUCCESS;
-		    cqe->cid = req->cmd.rw.cid;
-		    leap_pcqe_to_vcqe(vqp, cqe);
+                /* Fake completion here */
+                cqe->status = NVME_SUCCESS;
+                cqe->cid = req->cmd.rw.cid;
+                leap_pcqe_to_vcqe(vqp, cqe);
 
 #ifdef DEBUG_VQP
-		    printf("Coperd,%s,%d,vCQ[%d],%d, ", __func__, __LINE__, vqp->qid,
-			   vqp->cq_tail);
-		    print_nvmecqe(cqe);
+                printf("Coperd,%s,%d,vCQ[%d],%d, ", __func__, __LINE__, vqp->qid,
+                        vqp->cq_tail);
+                print_nvmecqe(cqe);
 #endif
 
-		    /* Coperd: TODO: how do we know if the vQP has been reset? */
-		    vcq_inc_tail(vqp);
+                /* Coperd: TODO: how do we know if the vQP has been reset? */
+                vcq_inc_tail(vqp);
 
-		    memcpy(req->cplbuf, cqe, NVME_CPL_SZ);
-		    // copy data. right now only able to ship 4K of data
-		    //memcpy(req->cplbuf + NVME_CPL_SZ, addr, RBUF_SIZE - NVME_CPL_SZ - NVME_CMD_SZ);
+                memcpy(req->cplbuf, cqe, NVME_CPL_SZ);
+                // copy data. right now only able to ship 4K of data
+                //memcpy(req->cplbuf + NVME_CPL_SZ, addr, RBUF_SIZE - NVME_CPL_SZ - NVME_CMD_SZ);
 
-		    /* Coperd: send CPL in req->cplbuf back to WPT for cpl handling */
-		    leap_client_post_send2(vqp->rctx, req);
-		    /* For SVK */
-		    QTAILQ_INSERT_TAIL(&vqp->c2s_list, req, entry);
-	    }
+                /* Coperd: send CPL in req->cplbuf back to WPT for cpl handling */
+                leap_client_post_send2(vqp->rctx, req);
+                /* For SVK */
+                QTAILQ_INSERT_TAIL(&vqp->c2s_list, req, entry);
+            }
 #endif
 
 #ifdef CORE_IOPS_TEST
 
-	/* For vQP routing via RDMA */
-	/* We need to send CPL back to WPT and it post completions for us */
-	struct nvme_completion *cqe = &req->cpl;
+            /* For vQP routing via RDMA */
+            /* We need to send CPL back to WPT and it post completions for us */
+            struct nvme_completion *cqe = &req->cpl;
 
-	/* Fake completion here */
-	cqe->status = NVME_SUCCESS;
-	cqe->cid = req->cmd.rw.cid;
-	leap_pcqe_to_vcqe(vqp, cqe);
+            /* Fake completion here */
+            cqe->status = NVME_SUCCESS;
+            cqe->cid = req->cmd.rw.cid;
+            leap_pcqe_to_vcqe(vqp, cqe);
 
 #ifdef DEBUG_VQP
-	printf("Coperd,%s,%d,vCQ[%d],%d, ", __func__, __LINE__, vqp->qid,
-	       vqp->cq_tail);
-	print_nvmecqe(cqe);
+            printf("Coperd,%s,%d,vCQ[%d],%d, ", __func__, __LINE__, vqp->qid,
+                    vqp->cq_tail);
+            print_nvmecqe(cqe);
 #endif
 
-	/* Coperd: TODO: how do we know if the vQP has been reset? */
-	vcq_inc_tail(vqp);
-	/* Coperd: ok, send virtual interrupt */
-	//vqp_inc_si(vqp);
+            /* Coperd: TODO: how do we know if the vQP has been reset? */
+            vcq_inc_tail(vqp);
+            /* Coperd: ok, send virtual interrupt */
+            //vqp_inc_si(vqp);
 
-	memcpy(req->cplbuf, cqe, NVME_CPL_SZ);
-	/* Coperd: send CPL in req->cplbuf back to WPT for cpl handling */
-	leap_client_post_send2(vqp->rctx, req);
-	/* For SVK */
-	//femu_ring_enqueue(vqp->c2s_rq, (void **)&req, 1);
-	QTAILQ_INSERT_TAIL(&vqp->c2s_list, req, entry);
+            memcpy(req->cplbuf, cqe, NVME_CPL_SZ);
+            /* Coperd: send CPL in req->cplbuf back to WPT for cpl handling */
+            leap_client_post_send2(vqp->rctx, req);
+            /* For SVK */
+            //femu_ring_enqueue(vqp->c2s_rq, (void **)&req, 1);
+            QTAILQ_INSERT_TAIL(&vqp->c2s_list, req, entry);
 #endif
 
-}
-}
+        }
+        }
 
-    // IMPORTANT: need to remove when running QL-VM IOPS_TEST
+        // IMPORTANT: need to remove when running QL-VM IOPS_TEST
 #ifdef CORE_IOPS_TEST
-    return 0;
+        return 0;
 #endif
 
-    /* Coperd: do cmd & data transfer for reqs in pending list */
-    if (leap->transport == LEAP_PCIE) {
-        client_submitter_pcie_process_pending_reqs(vqp);
-    } else if (leap->transport == LEAP_TCP) {
-        client_submitter_tcp_process_pending_reqs(vqp);
-    } else if (leap->transport == LEAP_RDMA) {
-        client_submitter_rdma_process_pending_reqs(vqp);
-    } else if(leap->transport == LEAP_STRIPE) {
-        client_submitter_stripe_process_pending_reqs(vqp);
-    } else if(leap->transport == LEAP_RAID1) {
-        client_submitter_raid1_process_pending_reqs(vqp);
-    } else if(leap->transport == LEAP_AZURE) {
-	    client_submitter_azure_process_pending_reqs(vqp);
-    }
+        /* Coperd: do cmd & data transfer for reqs in pending list */
+        if (leap->transport == LEAP_PCIE) {
+            client_submitter_pcie_process_pending_reqs(vqp);
+        } else if (leap->transport == LEAP_TCP) {
+            client_submitter_tcp_process_pending_reqs(vqp);
+        } else if (leap->transport == LEAP_RDMA) {
+            client_submitter_rdma_process_pending_reqs(vqp);
+        } else if(leap->transport == LEAP_STRIPE) {
+            client_submitter_stripe_process_pending_reqs(vqp);
+        } else if(leap->transport == LEAP_RAID1) {
+            client_submitter_raid1_process_pending_reqs(vqp);
+        } else if(leap->transport == LEAP_AZURE) {
+            client_submitter_azure_process_pending_reqs(vqp);
+        }
 
 #ifdef PSCHEDULE
-    return ret;
+        return ret;
 #else
-    return 0;
+        return 0;
 #endif
-}
-
+    }
 
 #ifdef SNAPSHOTS
 void flush_log(struct leap *leap)
 {
-	// go through all pending log entries and flush them
-	for(unsigned int i = 0; i < log_len; i++) {
-		struct iovec* iov = NULL;
-		int count = 0;
-		off_t offset;
-		uint16_t vqp_id;
-		uint16_t cid;
+    /* go through all pending log entries and flush them */
+    for (unsigned int i = 0; i < log_len; i++) {
+        struct iovec* iov = NULL;
+        int count = 0;
+        off_t offset;
+        uint16_t vqp_id;
+        uint16_t cid;
 
-		nvme_req *req;
+        nvme_req *req;
 
-		for(;;) {
-			bool found = false;
-			count = 0;
-			iov = NULL;
+        for (;;) {
+            bool found = false;
+            count = 0;
+            iov = NULL;
 
-			leap->log->peek_oldest_version(found, iov, count, offset, vqp_id, cid);
+            leap->log->peek_oldest_version(found, iov, count, offset, vqp_id, cid);
 
-			if(found) {
-				iov = new struct iovec[count];
-				found = false;
-				leap->log->peek_oldest_version(found, iov, count, offset, vqp_id, cid);
+            if (found) {
+                iov = new struct iovec[count];
+                found = false;
+                leap->log->peek_oldest_version(found, iov, count, offset, vqp_id, cid);
 
-				if (found) {
-					debug("snapshots: found this vqp and cid: %u %u\n", vqp_id, cid);
+                if (found) {
+                    debug("snapshots: found this vqp and cid: %u %u\n", vqp_id, cid);
 
-					// check if log entry exists in htable (req)
-					if(log_reqs.find(make_pair(vqp_id, cid)) == log_reqs.end())
-						assert(0 && "snapshots: nvme_req not found in the htable\n");
-					else
-						debug("snapshots: found pending request in the log\n");
+                    // check if log entry exists in htable (req)
+                    if (log_reqs.find(make_pair(vqp_id, cid)) == log_reqs.end())
+                        assert(0 && "snapshots: nvme_req not found in the htable\n");
+                    else
+                        debug("snapshots: found pending request in the log\n");
 
-					req = log_reqs[make_pair(vqp_id, cid)];
+                    req = log_reqs[make_pair(vqp_id, cid)];
 
-					// enqueue req for further processing
-					assert(req && req->status == IN_REQ_LIST);
-					QTAILQ_REMOVE(&leap->vqps[vqp_id].req_list, req, entry);
-					QTAILQ_INSERT_TAIL(&leap->vqps[vqp_id].submitter_pending_req_list, req, entry);
-                                        req->status = IN_SUBMITTER_P_LIST;
+                    // enqueue req for further processing
+                    assert(req && req->status == IN_REQ_LIST);
+                    QTAILQ_REMOVE(&leap->vqps[vqp_id].req_list, req, entry);
+                    QTAILQ_INSERT_TAIL(&leap->vqps[vqp_id].submitter_pending_req_list, req, entry);
+                    req->status = IN_SUBMITTER_P_LIST;
 
-					// remove oldest version (log and htable)
-					leap->log->pop_oldest_version();
-					log_reqs.erase(make_pair(vqp_id, cid));
+                    // remove oldest version (log and htable)
+                    leap->log->pop_oldest_version();
+                    log_reqs.erase(make_pair(vqp_id, cid));
 
-					debug("snapshots: removed oldest version from the log\n");                                     \
+                    debug("snapshots: removed oldest version from the log\n");                                     \
 
 
-				} else {
-					assert(0 && "snapshots: log entry missing, aborting\n");
-				}
+                } else {
+                    assert(0 && "snapshots: log entry missing, aborting\n");
+                }
 
-				delete[] iov;
-				break;
-			}
-		}
-	}
+                delete[] iov;
+                break;
+            }
+        }
+    }
 
-	// reset log counter
-	log_len = 0;
+    // reset log counter
+    log_len = 0;
 
-	// process enqueued requests vQP->pQP
-	if (leap->transport == LEAP_PCIE) {
-		client_submitter_pcie_process_pending_reqs(&leap->vqps[1]);
-		client_submitter_pcie_process_pending_reqs(&leap->vqps[2]);
-	} else {
-		assert(0 && "snapshots only work with PCIe");
-	}
+    // process enqueued requests vQP->pQP
+    if (leap->transport == LEAP_PCIE) {
+        client_submitter_pcie_process_pending_reqs(&leap->vqps[1]);
+        client_submitter_pcie_process_pending_reqs(&leap->vqps[2]);
+    } else {
+        assert(0 && "snapshots only work with PCIe");
+    }
 }
 #endif
-
 
 #ifdef PSCHEDULE
 // pick next QP using work-conserving-strict scheduling
@@ -2924,22 +2921,22 @@ int sched_get_next_sq(struct leap *leap, int pr, int completed)
 	assert(leap->pr_cnt[0].max <= PR0);
 	assert(leap->pr_cnt[1].max <= PR0);
 
-	// processed new vQP entries in the previous iter ?
-	if(completed > 0) {
+	/* processed new vQP entries in the previous iter? */
+	if (completed > 0) {
 		// if PR0 active, reset weights and counters
-		if(pr == 0) {
+		if (pr == 0) {
 			poll_cnt = 0;
 
 			leap->pr_cnt[0].max = PR0;
 			leap->pr_cnt[1].max = PR1;
 
-			if(leap->pr_cnt[0].current < leap->pr_cnt[0].max) {
+			if (leap->pr_cnt[0].current < leap->pr_cnt[0].max) {
 				return 1;
 			}
 		}
 
 		// PR0 consumed credit, on to PR1
-		if(leap->pr_cnt[1].current < leap->pr_cnt[1].max) {
+		if (leap->pr_cnt[1].current < leap->pr_cnt[1].max) {
 			leap->pr_cnt[0].current = 0;
 			return 2;
 		} else {
@@ -2949,22 +2946,22 @@ int sched_get_next_sq(struct leap *leap, int pr, int completed)
 
 			return 1;
 		}
-	} else {
-                if(pr == 0) {
-			if(poll_cnt > RETRY) {
-				// if PR0 idle, increase PR1 weight - decrease PR0
-				leap->pr_cnt[0].max = get_max(leap->pr_cnt[0].max - 1, (unsigned)PR1);
-				leap->pr_cnt[1].max = get_min(leap->pr_cnt[1].max + 1, (unsigned)PR0);
+    } else {
+        if (pr == 0) {
+            if (poll_cnt > RETRY) {
+                // if PR0 idle, increase PR1 weight - decrease PR0
+                leap->pr_cnt[0].max = get_max(leap->pr_cnt[0].max - 1, (unsigned)PR1);
+                leap->pr_cnt[1].max = get_min(leap->pr_cnt[1].max + 1, (unsigned)PR0);
 
-				return 2;
-			} else {
-				// else count one empty poll
-				poll_cnt += 1;
+                return 2;
+            } else {
+                // else count one empty poll
+                poll_cnt += 1;
 
-				return 1;
-			}
-		}
-	}
+                return 1;
+            }
+        }
+    }
 
 	return 1;
 }
@@ -2972,35 +2969,35 @@ int sched_get_next_sq(struct leap *leap, int pr, int completed)
 
 int poll_vsqs(struct leap *leap)
 {
-	struct nvme_qpair *vqps = leap->vqps;
-	struct nvme_qpair *vqp;
-	int ret;
+    struct nvme_qpair *vqps = leap->vqps;
+    struct nvme_qpair *vqp;
+    int ret;
 
-	// first check PR0
-	static int i = 1;
+    // first check PR0
+    static int i = 1;
 
-	vqp = &vqps[i];
+    vqp = &vqps[i];
 
-	ret = poll_vsq(leap, vqp, i-1);
-	if (ret == -ERESET) {
-	} else if (ret == -ESQMAP) {
-		/* Coperd: vqp is not mapped correctly */
-		printf("\n\n\nvqp[%d],spdb:%d,sqdb:%d,cqdb:%d,t:%d,h:%d\n\n\n",
-		       vqp->qid, *(vqp->sp_db), *(vqp->sq_db), *(vqp->cq_db),
-		       vqp->sq_tail, vqp->sq_head);
-		sleep(1);
-	}
+    ret = poll_vsq(leap, vqp, i-1);
+    if (ret == -ERESET) {
+    } else if (ret == -ESQMAP) {
+        /* Coperd: vqp is not mapped correctly */
+        printf("\n\n\nvqp[%d],spdb:%d,sqdb:%d,cqdb:%d,t:%d,h:%d\n\n\n",
+                vqp->qid, *(vqp->sp_db), *(vqp->sq_db), *(vqp->cq_db),
+                vqp->sq_tail, vqp->sq_head);
+        sleep(1);
+    }
 
-	// pick the next queue
-	i = sched_get_next_sq(leap, i-1, ret);
+    // pick the next queue
+    i = sched_get_next_sq(leap, i-1, ret);
 
 #ifdef SNAPSHOTS
-	// TODO: do we want to flush only when writer selected?
-	// and/or do we want to flush every Nth iteration?
-	flush_log(leap);
+    // TODO: do we want to flush only when writer selected?
+    // and/or do we want to flush every Nth iteration?
+    flush_log(leap);
 #endif
 
-	return 0;
+    return 0;
 }
 
 #else

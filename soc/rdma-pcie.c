@@ -1,8 +1,9 @@
 /*
  * File rdma-pcie.c
  * RDMA-based memory sharing between x86 and SoC
+ *
+ * Written by Huaicheng Li <huaicheng@cs.uchicago.edu>
  */
-
 
 #include "rdma-util.h"
 #include <time.h>
