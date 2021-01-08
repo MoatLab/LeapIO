@@ -29,10 +29,8 @@ typedef struct NvmeCmd {
 
 void print_nvmecmd(NvmeCmd *cmd)
 {
-    //printf("-------------------\n");
     printf("opcode:%d,fuse:%d,cid:%d,nsid:%d,prp1:%" PRIu64 ",prp2:%" PRIu64 "\n",
             cmd->opcode, cmd->fuse, cmd->cid, cmd->nsid, cmd->prp1, cmd->prp2);
-    //printf("~~~~~~~~~~~~~~~~~~~\n");
 }
 
 #define MB (1024 * 1024)
@@ -91,12 +89,9 @@ int main()
     printf("\n\n***** Coperd,%s,******\n\n", (char *)hmembuf);
     exit(1);
 
-
     //hmembuf += ((12ULL + 32ULL) << 30);
-
     //hmembuf += (32ULL << 30);
     //pmembuf += 1ULL * GB + 0x800000000;
-
     //printf("Coperd,%s,\n", (char *)pmembuf);
 
     tt_ns = 0;
@@ -131,9 +126,7 @@ int main()
     tt_ns = 0;
     niter = 0;
     for (i = 0; i < 1; i++) {
-        //memset(pmembuf, i % 10, 4096);
         st_ns = get_ns();
-        //memcpy(pmembuf, membuf, 4096);
         memcpy(membuf, hbuf, 4096);
         et_ns = get_ns();
         membuf += 4096;
@@ -143,16 +136,11 @@ int main()
     }
     printf("Loop: %d, Avg lat: %.2f ns\n", niter, (tt_ns * 1.0) / niter);
 
-
     exit(1);
 
-
     int fd = open("/sys/devices/pci0000:00/0000:00:05.0/resource2", O_RDWR | O_SYNC);
-
     void *ptr = mmap(0, 4096, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-
     printf("PCI BAR0 0x0000 = 0x%4x\n",  *((unsigned short *) ptr));
-
     NvmeCmd *sq = (NvmeCmd *)ptr;
 
     for (i = 0; i < 10; i++)
