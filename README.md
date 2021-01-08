@@ -1,5 +1,13 @@
+```
+    __                     ________ 
+   / /   ___  ____ _____  /  _/ __ \
+  / /   / _ \/ __ `/ __ \ / // / / /
+ / /___/  __/ /_/ / /_/ // // /_/ / 
+/_____/\___/\__,_/ .___/___/\____/     -- Efficient and Portable Virtual NVMe Storage on ARM SoCs 
+                /_/                 
 
-# LeapIO: Efficient and Portable Virtual NVMe Storage on ARM SoCs
+
+```
 
 Ok, code is being incrementally released, please stay tuned! You can fill in this [request form](https://docs.google.com/forms/d/e/1FAIpQLSeg-NpQ8hBlZGTgKVt72vOTo6HHYi9DX1_3DmioP2zTbe3cqw/viewform?vc=0&c=0&w=1&flr=0) to get notified when the entire code repo is ready. 
 
