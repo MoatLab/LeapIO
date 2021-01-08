@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# this is the "shutdown -h now" script in the VM
+shutdownVM=/home/huaicheng/bin/gj
+
+echo -n "===> Shutting down SoC-VM ..."
+ssh -t socvm "$shutdownVM"
+echo "Done."
+
+echo -n "===> Shutting down DB-VM ..."
+ssh -t dbvm "$shutdownVM"
+echo "Done."

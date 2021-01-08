@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# $1: vm codename in ~/.ssh/config, e.g. dbvm, socvm
+function wait_for_vm_up()
+{
+    local nsecs=0
+    echo "===> Start waiting for "$1" to be UP"
+    st=$(date +%s)
+    while true; do
+        ((nsecs++))
+        ret=$(ssh -t "$1" "whoami" >/dev/null 2>&1 && echo 0 || echo 1)
+        if [[ $ret == 0 ]]; then
+            et=$(date +%s)
+            dt=$((et - st))
+            echo "===> Finally, "$1" is up and ready, takes $dt seconds"
+            echo ""
+            break
+        else
+            sleep 1
+            ((nsecs++))
+            echo "===> Still Waiting for ["$1"] to be UP .. waited $nsecs seconds"
+        fi
+    done
+}
+
+#cd ~/git/msr/femu/build-femu
+cd ../femu/build-femu
+
+./socvm.sh > socvm.log 2>&1  &
+
+sleep 1
+
+./dbvm-oc.sh > dbvm.log 2>&1 &
+
+#wait_for_vm_up "dbvm"
+
+#wait_for_vm_up "socvm"
+
+echo ""
