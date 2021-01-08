@@ -1,8 +1,7 @@
 
 # LeapIO: Efficient and Portable Virtual NVMe Storage on ARM SoCs
 
-Ok, code will be released soon, please stay tuned! You can fill in this [request form](https://docs.google.com/forms/d/e/1FAIpQLSeg-NpQ8hBlZGTgKVt72vOTo6HHYi9DX1_3DmioP2zTbe3cqw/viewform?vc=0&c=0&w=1&flr=0) to get notified when the code is available. 
-
+Ok, code is being incrementally released, please stay tuned! You can fill in this [request form](https://docs.google.com/forms/d/e/1FAIpQLSeg-NpQ8hBlZGTgKVt72vOTo6HHYi9DX1_3DmioP2zTbe3cqw/viewform?vc=0&c=0&w=1&flr=0) to get notified when the entire code repo is ready. 
 
 Feel free to contact Huaicheng Li (hcli@cmu.edu) for any questions.
 
