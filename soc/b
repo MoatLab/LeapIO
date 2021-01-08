@@ -1,0 +1,16 @@
+#!/bin/bash
+
+if [[ $1 != 'd' && $1 != 'r' ]]; then
+    echo ""
+    echo "  Usage: ./b [d|r], d for debug, r for release"
+    echo ""
+    exit
+fi
+
+make clean > /dev/null
+
+if [[ $1 == 'd' ]]; then
+    make debug
+elif [[ $1 == 'r' ]]; then
+    make release
+fi
