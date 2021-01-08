@@ -251,8 +251,8 @@ static int map_res(struct leap *leap)
      * socp-server now
      */
 #ifndef CORE_IOPS_TEST
-    if(leap->transport != LEAP_AZURE) {
-	    if((leap->role == SOCK_SERVER) ||
+    if (leap->transport != LEAP_AZURE) {
+	    if ((leap->role == SOCK_SERVER) ||
 	       ((leap->role == SOCK_CLIENT) && (leap->transport == LEAP_PCIE))) {
 		    int ret = map_pqps();
 		    if (ret) {
@@ -769,7 +769,7 @@ static void leap_init_qpair_rest(struct nvme_qpair *qpair)
     assert(QTAILQ_EMPTY(&qpair->c2s_list));
 #endif
 
-    if(leap->role == SOCK_CLIENT || leap->role == SOCK_SERVER) {
+    if (leap->role == SOCK_CLIENT || leap->role == SOCK_SERVER) {
 	    qpair->role = leap->role;
 
 	    if (qpair->qid * 2 <= leap->nfds) {
@@ -2026,7 +2026,7 @@ static void client_submitter_pcie_process_pending_reqs(struct nvme_qpair *vqp)
         QTAILQ_INSERT_TAIL(&vqp->s2c_list, req, entry);
 #endif
 
-	if((vqp->leap->transport == LEAP_STRIPE) || (vqp->leap->transport == LEAP_RAID1))
+	if ((vqp->leap->transport == LEAP_STRIPE) || (vqp->leap->transport == LEAP_RAID1))
 		break;
     }
 
@@ -2079,14 +2079,14 @@ static void client_submitter_rdma_process_pending_reqs(struct nvme_qpair *vqp)
         }
 
 	// if raid1, don't remove the entry, save for local pcie req
-	if(vqp->leap->transport != LEAP_RAID1) {
+	if (vqp->leap->transport != LEAP_RAID1) {
 		assert(req->status == IN_SUBMITTER_P_LIST);
 		QTAILQ_REMOVE(&vqp->submitter_pending_req_list, req, entry);
 	}
 
 #if defined(__x86_64__)
 	// if raid1, no need to enqueue twice
-	if(vqp->leap->transport != LEAP_RAID1) {
+	if (vqp->leap->transport != LEAP_RAID1) {
 		rc = femu_ring_enqueue(vqp->s2c_rq, (void **)&req, 1);
 		assert(rc == 1);
 	}
@@ -2094,7 +2094,7 @@ static void client_submitter_rdma_process_pending_reqs(struct nvme_qpair *vqp)
         QTAILQ_INSERT_TAIL(&vqp->s2c_list, req, entry);
 #endif
 
-	if((vqp->leap->transport == LEAP_STRIPE) || (vqp->leap->transport == LEAP_RAID1))
+	if ((vqp->leap->transport == LEAP_STRIPE) || (vqp->leap->transport == LEAP_RAID1))
 		break;
     }
 }
@@ -2178,7 +2178,7 @@ static void client_submitter_stripe_process_pending_reqs(struct nvme_qpair *vqp)
 #endif
 
 		// striped at 16MB granularity
-		if(((req->cmd.rw.slba / 4096) % 2) == 0) {
+		if (((req->cmd.rw.slba / 4096) % 2) == 0) {
 #ifdef DEBUG_PQP
 			printf("issuing request to local SSD\n");
 #endif
@@ -2345,7 +2345,7 @@ int sched_sq_yield(struct leap *leap, int pr, int completed)
 {
     leap->pr_cnt[pr].current += completed;
 
-    if(leap->pr_cnt[pr].current >= leap->pr_cnt[pr].max) {
+    if (leap->pr_cnt[pr].current >= leap->pr_cnt[pr].max) {
         debug("reached maximum, need to exit\n");
         return 1;
     }
@@ -2450,7 +2450,7 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
 #endif
 
     /* Coperd: default path, using shared mem for vQP */
-    if((leap->transport == LEAP_PCIE && leap->use_rdma_for_vqp == false) ||
+    if ((leap->transport == LEAP_PCIE && leap->use_rdma_for_vqp == false) ||
        (leap->transport == LEAP_AZURE && leap->use_rdma_for_vqp == false) ||
        (leap->transport == LEAP_TCP && leap->use_rdma_for_vqp == false) ||
        (leap->transport == LEAP_RDMA && leap->use_rdma_for_vqp == false)) {
@@ -2523,13 +2523,13 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
 
 
 #ifdef SNAPSHOTS
-            if(req->cmd.rw.opcode == NVME_CMD_READ) {
+            if (req->cmd.rw.opcode == NVME_CMD_READ) {
                 debug("snapshots: this is a read request\n");
 
                 // read latest version from the log
                 leap->log->read_latest_versions(req->iov, req->iovcnt, req->cmd.rw.slba * 4096);
 
-            } else if(req->cmd.rw.opcode == NVME_CMD_WRITE) {
+            } else if (req->cmd.rw.opcode == NVME_CMD_WRITE) {
                 debug("snapshots: this is a write request\n");
 
                 // add new version to the log
@@ -2540,7 +2540,7 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
                 debug("snapshots: this is a flush operation\n");
             }
 
-            if(req->cmd.rw.opcode == NVME_CMD_WRITE) {
+            if (req->cmd.rw.opcode == NVME_CMD_WRITE) {
                 convert_vcmd_to_pcmd(req, vcmd);
 
                 // Coperd: update vsq head
@@ -2548,7 +2548,7 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
 
                 // same qid-cid pair shouldn't exist
 
-                if(log_reqs.find(make_pair(vqp->qid, vcmd->rw.cid)) != log_reqs.end()) {
+                if (log_reqs.find(make_pair(vqp->qid, vcmd->rw.cid)) != log_reqs.end()) {
                     assert(0 && "snapshots: this entry exists in the log, aborting\n");
                 } else {
                     debug("snapshots: adding new write entry to the log\n");
@@ -2588,7 +2588,7 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
             // stnovako: check if we should exit
             ret = ret + 1;
 
-            if(sched_sq_yield(leap, pr, ret))
+            if (sched_sq_yield(leap, pr, ret))
                 break;
 #endif
         }
@@ -2620,13 +2620,13 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
 
             // SNAPSHOT code starts here	    
 #ifdef SNAPSHOTS
-            if(req->cmd.rw.opcode == NVME_CMD_READ) {
+            if (req->cmd.rw.opcode == NVME_CMD_READ) {
                 debug("snapshots: this is a read request\n");
 
                 // read latest version from the log
                 leap->log->read_latest_versions(req->iov, req->iovcnt, req->cmd.rw.slba * 4096);
 
-            } else if(req->cmd.rw.opcode == NVME_CMD_WRITE) {
+            } else if (req->cmd.rw.opcode == NVME_CMD_WRITE) {
                 debug("snapshots: this is a write request\n");
 
                 // add new version to the log
@@ -2637,7 +2637,7 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
                 debug("snapshots: this is a flush operation\n");
             }
 
-            if(req->cmd.rw.opcode == NVME_CMD_WRITE) {
+            if (req->cmd.rw.opcode == NVME_CMD_WRITE) {
                 convert_vcmd_to_pcmd_soc(req, rreq);
 
                 // Coperd: update vsq head
@@ -2654,7 +2654,7 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
 
                 // same qid-cid pair shouldn't exist
 
-                if(log_reqs.find(make_pair(vqp->qid, cid)) != log_reqs.end()) {
+                if (log_reqs.find(make_pair(vqp->qid, cid)) != log_reqs.end()) {
                     assert(0 && "snapshots: this entry exists in the log, aborting\n");
                 } else {
                     debug("snapshots: adding new write entry to the log\n");
@@ -2705,7 +2705,7 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
 #ifdef CORE_IOPS_TEST // LATEST
             vsq_inc_head(vqp);
 #else
-            if((vqp->leap->transport == LEAP_AZURE) || (vqp->leap->transport == LEAP_TCP))
+            if ((vqp->leap->transport == LEAP_AZURE) || (vqp->leap->transport == LEAP_TCP))
                 vsq_inc_head(vqp);
 #endif
 
@@ -2722,12 +2722,12 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
 #ifdef PSCHEDULE
             ret = ret + 1;
 
-            if(sched_sq_yield(leap, pr, ret))
+            if (sched_sq_yield(leap, pr, ret))
                 break;
 #endif
 
 #ifdef ABC
-            //if(hash_cache.find(req->cmd.rw.slba) == hash_cache.end()) {
+            //if (hash_cache.find(req->cmd.rw.slba) == hash_cache.end()) {
             uint8_t *addr;
             if (!abc_is_block_cached(req->cmd.rw.slba, &addr)) {
                 printf("[ABC] adding LBA %lu to the cache\n", req->cmd.rw.slba);
@@ -2822,11 +2822,11 @@ int poll_vsq(struct leap *leap, struct nvme_qpair *vqp)
             client_submitter_tcp_process_pending_reqs(vqp);
         } else if (leap->transport == LEAP_RDMA) {
             client_submitter_rdma_process_pending_reqs(vqp);
-        } else if(leap->transport == LEAP_STRIPE) {
+        } else if (leap->transport == LEAP_STRIPE) {
             client_submitter_stripe_process_pending_reqs(vqp);
-        } else if(leap->transport == LEAP_RAID1) {
+        } else if (leap->transport == LEAP_RAID1) {
             client_submitter_raid1_process_pending_reqs(vqp);
-        } else if(leap->transport == LEAP_AZURE) {
+        } else if (leap->transport == LEAP_AZURE) {
             client_submitter_azure_process_pending_reqs(vqp);
         }
 
@@ -3406,7 +3406,7 @@ void leap_pcqe_to_vcqe(struct nvme_qpair *vqp, struct nvme_completion *cqe)
 		cqe->status = cpu_to_le16(status << 1 | vqp->cq_phase);
 		cqe->sq_head = cpu_to_le16(vqp->sq_head);
 	} else {
-		if((vqp->leap->transport == LEAP_AZURE) || (vqp->leap->transport == LEAP_TCP)) {
+		if ((vqp->leap->transport == LEAP_AZURE) || (vqp->leap->transport == LEAP_TCP)) {
 			cqe->status = cpu_to_le16(status << 1 | vqp->cq_phase);
 			cqe->sq_head = cpu_to_le16(vqp->sq_head);
 		}
@@ -4174,7 +4174,7 @@ static void client_completer_pcie_process_pending_req_resp(struct leap *leap,
         }
         leap_handle_pcqe(leap, pqp, &pcqe);
 
-        if(leap->transport == LEAP_RAID1) {
+        if (leap->transport == LEAP_RAID1) {
             consumed++;
             continue;
         }
@@ -4448,10 +4448,10 @@ static void poll_resp(struct leap *leap)
             client_completer_tcp_process_pending_req_resp(leap, vqp);
         } else if (leap->transport == LEAP_RDMA) {
             client_completer_rdma_process_pending_req_resp(leap, vqp);
-        } else if((leap->transport == LEAP_STRIPE) || (leap->transport == LEAP_RAID1)) {
+        } else if ((leap->transport == LEAP_STRIPE) || (leap->transport == LEAP_RAID1)) {
             client_completer_pcie_process_pending_req_resp(leap,vqp);
             client_completer_rdma_process_pending_req_resp(leap,vqp);
-        } else if(leap->transport == LEAP_AZURE) {
+        } else if (leap->transport == LEAP_AZURE) {
 		client_completer_azure_process_pending_req_resp(leap, vqp);
 	} else {
 		abort();
@@ -4647,7 +4647,7 @@ int leap_init_poller(struct leap *leap)
         leap->submitter = create_worker(server_poller_ts, leap);
     } else if (leap->role == SOCK_CLIENT) {
         leap->submitter = create_worker(client_poller_ts, leap);
-    } else if(leap->role == SOCK_AZURE) {
+    } else if (leap->role == SOCK_AZURE) {
         leap->submitter = create_worker(client_poller_ts, leap);
     }
 
@@ -5026,14 +5026,14 @@ static int rdma_server_init_pcie(struct leap *leap)
     int i;
 
     addr.sin_family = AF_INET;
-    if(leap->transport == LEAP_TCP) {
+    if (leap->transport == LEAP_TCP) {
 	    addr.sin_addr.s_addr = inet_addr((char *)leap->rdma_ip);
     } else {
 	    addr.sin_addr.s_addr = inet_addr((char *)leap->ip);
     }
 
     assert(leap->ip && leap->port);
-    if(leap->transport == LEAP_TCP) {
+    if (leap->transport == LEAP_TCP) {
 	    printf("QP-PCIe: Init RDMA server at [%s:%d]...\n", (char *)leap->rdma_ip, leap->rdma_port);
     } else {
 	    printf("QP-PCIe: Init RDMA server at [%s:%d]...\n", (char *)leap->ip, leap->port);
@@ -5041,7 +5041,7 @@ static int rdma_server_init_pcie(struct leap *leap)
     TEST_Z(leap->ec2 = rdma_create_event_channel());
 
     for (i = 0; i < NR_DBVMS; i++) {
-	    if(leap->transport == LEAP_TCP) {
+	    if (leap->transport == LEAP_TCP) {
 		    addr.sin_port = htons(leap->rdma_port + i);
 	    } else {
 		    addr.sin_port = htons(leap->port + i);
@@ -5183,7 +5183,7 @@ static int leap_parse_args(struct leap *leap, int argc, char **argv)
     } else if (strcmp(argv[1], "server") == 0) {
         leap->role = SOCK_SERVER;
         printf("Coperd,Role:%s\n", "Server");
-    } else if(strcmp(argv[1], "azure") == 0) {
+    } else if (strcmp(argv[1], "azure") == 0) {
 	    leap->role = SOCK_AZURE;
 	    printf("Coperd,Role:%s\n", "Azure");
     } else {
@@ -5202,21 +5202,21 @@ static int leap_parse_args(struct leap *leap, int argc, char **argv)
         leap->transport = LEAP_TCP;
     } else if (strcmp(argv[2], "rdma") == 0) {
         leap->transport = LEAP_RDMA;
-    } else if(strcmp(argv[2], "stripe") == 0) {
+    } else if (strcmp(argv[2], "stripe") == 0) {
 	    leap->transport = LEAP_STRIPE;
-	    if(leap->role != SOCK_CLIENT) {
+	    if (leap->role != SOCK_CLIENT) {
 		    printf("\n\nERROR: when using STRIPE, argv[1] must be \"client\"\n\n");
 		    exit(EXIT_FAILURE);
 	    }
-    } else if(strcmp(argv[2], "raid1") == 0) {
+    } else if (strcmp(argv[2], "raid1") == 0) {
 	    leap->transport = LEAP_RAID1;
-	    if(leap->role != SOCK_CLIENT) {
+	    if (leap->role != SOCK_CLIENT) {
 		    printf("\n\nERROR: when using RAID1, argv[1] must be \"client\"\n\n");
 		    exit(EXIT_FAILURE);
 	    }
-    } else if(strcmp(argv[2], "azure") == 0) {
+    } else if (strcmp(argv[2], "azure") == 0) {
 	    leap->transport = LEAP_AZURE;
-	    if(leap->role != SOCK_AZURE) {
+	    if (leap->role != SOCK_AZURE) {
 		    printf("\n\nERROR: when using AZURE, argv[1] must be \"client\"\n\n");
 		    exit(EXIT_FAILURE);
 	    }
@@ -5232,7 +5232,7 @@ static int leap_parse_args(struct leap *leap, int argc, char **argv)
     }
 
 #if defined(__x86_64__)
-    if(leap->transport == LEAP_AZURE) {
+    if (leap->transport == LEAP_AZURE) {
       return 0;
     }
 #endif
@@ -5248,7 +5248,7 @@ static int leap_parse_args(struct leap *leap, int argc, char **argv)
     printf("Coperd,IP:%s,Port:%d\n", leap->ip, leap->port);
 
 #if !defined(__x86_64__)
-    if(leap->transport == LEAP_TCP) {
+    if (leap->transport == LEAP_TCP) {
 	    strcpy((char *)leap->rdma_ip, argv[5]);
 	    leap->rdma_port = atoi(argv[6]);
 	    printf("Coperd,RDMA_FE_IP:%s,Port:%d\n", leap->rdma_ip, leap->rdma_port);
@@ -5403,10 +5403,10 @@ int main(int argc, char **argv)
     }
 
     // set up the Azure storage drive
-    if(leap->role == SOCK_AZURE) {
+    if (leap->role == SOCK_AZURE) {
         ret = leap_setup_azure_drive(leap, argc, argv);
 
-        if(ret) {
+        if (ret) {
             printf("Coperd,%s,setup_azure_Drive failed\n", __func__);
             goto err_setup_endpoint;
         }
