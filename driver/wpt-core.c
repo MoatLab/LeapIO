@@ -488,18 +488,18 @@ void wpt_update_dbvm_info(struct wpt *wpt, struct wpt_qp_data *d)
 
 	printk("wpt_update_dbvm_info: VM = %d; this QID = %d\n", pid, qid);
 
-	if(qid == 0)
+	if (qid == 0)
 		return;
 
-	for(i = 0; i < wpt->ndbvms; i++) {
-		if((pid == wpt->dbvms[i].pid) && (qid == wpt->dbvms[i].qid)) {
+	for (i = 0; i < wpt->ndbvms; i++) {
+		if ((pid == wpt->dbvms[i].pid) && (qid == wpt->dbvms[i].qid)) {
 			printk("found VM or QP\n");
 			found = true;
 			break;
 		}
 	}
 
-	if(!found) {
+	if (!found) {
 		printk("Coperd,===>new QP entry===>DBVM[%d]\n", wpt->ndbvms);
 		wpt->dbvms[wpt->ndbvms].pid = pid;
 		wpt->dbvms[wpt->ndbvms].qid = qid;

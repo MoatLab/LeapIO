@@ -126,7 +126,7 @@ void nvme_update_sq_tail(struct nvme_qpair *vqp)
     /* Coperd: shadow DB always contains the newest tail location */
     u16 tail;
 
-    if(!vqp->is_active)
+    if (!vqp->is_active)
 	    return;
 
     BUG_ON(!vqp->is_active);

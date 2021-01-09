@@ -653,7 +653,7 @@ int ats_ts(void *data)
         }
     }
 
-    if(use_rdma_for_vqp) {
+    if (use_rdma_for_vqp) {
         pr_info("Deallocating RDMA resources\n");
         wpt_deinit();
     }
@@ -1136,11 +1136,11 @@ int ats_map_vqp_db(struct wpt *wpt, struct wpt_qp *qp)
 
     /* Map the doorbell memory into the VM */
     ret = ats_reinit_dbbuf(wpt, dbpfn, 1);
-    if(ret) {
+    if (ret) {
         return ret;
     }
 
-    for(i = 0; i < wpt->ndbvms; i++) {
+    for (i = 0; i < wpt->ndbvms; i++) {
         vqp = &ats->vqps[i];
         ats_qid = vqp->qid;
 

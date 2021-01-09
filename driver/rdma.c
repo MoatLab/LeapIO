@@ -198,9 +198,9 @@ static void cq_event_handler(struct ib_cq *cq, void *ctx)
             //pr_info("this prp1 [RECV] %llu, CID %d\n", cmd->rw.dptr.prp.prp1, cqe->cid);
 
             struct page *page = pfn_to_page(le64_to_cpu(cmd->rw.dptr.prp.prp1) >> PAGE_SHIFT);
-            if(page != NULL) {
+            if (page != NULL) {
                 void *vaddr = vmap(&page, 1, VM_MAP, PAGE_KERNEL_NOCACHE);
-                if(vaddr != NULL) {
+                if (vaddr != NULL) {
                     //memcpy(vaddr, (void *)cqe, NVME_CPL_DATA_SZ);
                 } else {
                     // should never print
