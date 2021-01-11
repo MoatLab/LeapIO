@@ -70,7 +70,6 @@ static int wpt_open(struct inode *inode, struct file *file)
     struct wpt_dev *dev = wpt->wpt_dev;
     struct wpt_dev_data *wpt_data;
 
-    printk("Coperd,%s,start\n", __func__);
     wpt_data = container_of(inode->i_cdev, struct wpt_dev_data, cdev);
 
     file->private_data = wpt_data;
@@ -94,8 +93,8 @@ static int wpt_release(struct inode *inode, struct file *filp)
     return 0;
 }
 
-static ssize_t wpt_read(struct file *filp, char __user *buf,
-                        size_t count, loff_t *ppos)
+static ssize_t wpt_read(struct file *filp, char __user *buf, size_t count,
+        loff_t *ppos)
 {
     struct wpt_dev_data *wpt_data;
 
@@ -104,8 +103,8 @@ static ssize_t wpt_read(struct file *filp, char __user *buf,
     return 0;
 }
 
-static ssize_t wpt_write(struct file *filp, const char __user *buf,
-                        size_t count, loff_t *ppos)
+static ssize_t wpt_write(struct file *filp, const char __user *buf, size_t count,
+        loff_t *ppos)
 {
     return 0;
 }
@@ -115,7 +114,7 @@ static int wpt_mmap(struct file *filp, struct vm_area_struct *vma)
     return 0;
 }
 
-/* Coperd: check if addr maps to pfn by walking the page table again */
+/* Check if addr maps to pfn correctly by walking the page table again */
 static int wpt_map_ok(struct wpt *wpt, unsigned long addr, u64 pfn)
 {
     pte_t *ptep;
@@ -133,8 +132,8 @@ static int wpt_map_ok(struct wpt *wpt, unsigned long addr, u64 pfn)
 }
 
 static int wpt_remap_pfns(struct wpt *wpt, struct vm_area_struct *vma,
-                         unsigned long va, unsigned long pfn, size_t size,
-                         pgprot_t prot)
+        unsigned long va, unsigned long pfn, size_t size,
+        pgprot_t prot)
 {
     int ret;
 
@@ -145,7 +144,6 @@ static int wpt_remap_pfns(struct wpt *wpt, struct vm_area_struct *vma,
 
     BUG_ON(!wpt);
     BUG_ON(!vma);
-    //BUG_ON(!pfn_valid(pfn));
 
     ret = wpt_remap_pfn_range(vma, va, pfn, size, prot);
     if (ret) {
@@ -155,7 +153,7 @@ static int wpt_remap_pfns(struct wpt *wpt, struct vm_area_struct *vma,
     return wpt_map_ok(wpt, va, pfn);
 }
 
-/* Coperd: TODO: map physical DB BAR register */
+/* Coperd: map physical DB BAR register */
 static int wpt_map_pqp_db(unsigned long *addr)
 {
     struct wpt *wpt = WPT();
@@ -220,7 +218,7 @@ static int wpt_get_pqp_db(unsigned long p)
     return 0;
 }
 
-/* Coperd: map one pQP, TODO: merge w/ vQP mngt API later */
+/* Coperd: map one pQP */
 static int wpt_map_psq(struct leap_qpbuf *qpbuf, unsigned long *addr)
 {
     struct wpt *wpt = WPT();
@@ -250,7 +248,6 @@ static int wpt_map_psqs(struct leap_qpbuf *qpbufp, unsigned long *addr)
     int ret;
     int i;
 
-    /* Coperd: TODO */
     for (i = spqpid; i <= epqpid; i++) {
         printk("Coperd,%s,map pSQ[%d]\n", __func__, i);
         qpbuf = &qpbufp[i];
@@ -299,7 +296,6 @@ static int wpt_map_pcqs(struct leap_qpbuf *qpbufp, unsigned long *addr)
     int ret;
     int i;
 
-    /* Coperd: TODO */
     for (i = spqpid; i <= epqpid; i++) {
         printk("Coperd,%s,map pCQ[%d]\n", __func__, i);
         qpbuf = &qpbufp[i];
@@ -670,7 +666,6 @@ struct pmap {
 /* 16MB ==> 4096 4KB pages */
 static struct pmap soc_pmap[NPGS];
 
-/* Coperd: Do NOT change this */
 static void wpt_verify_sp_map(struct wpt *wpt)
 {
 #define SP_MAGIC_IDX   (2000)
@@ -698,7 +693,7 @@ static int wpt_init_sp_page(struct wpt *wpt)
     BUG_ON((unsigned long)wpt->spbuf % PAGE_SIZE);
     memset(wpt->spbuf, 0, PAGE_SIZE);
 
-    /* Coperd: leap uses 2048-4095 bytes for should-interrupt communication */
+    /* Coperd: we uses 2048-4095 bytes for should-interrupt communication */
     wpt->sibuf = (u32 *)(((void *)wpt->spbuf) + 2048);
 
     wpt_verify_sp_map(wpt);
@@ -1004,44 +999,43 @@ static long wpt_ioctl(struct file *filp, unsigned int cmd, unsigned long vaddr)
     unsigned long cur_addr = vaddr;
 
     switch(cmd) {
-
     case WPT_CMD_DUMP:
-	    printk("[WPT_CMD_DUMP]\n");
+        printk("[WPT_CMD_DUMP]\n");
         return wpt_do_cmd_dump(vaddr);
 
     case WPT_CMD_SWAP:
-	    printk("[WPT_CMD_SWAP]\n");
+        printk("[WPT_CMD_SWAP]\n");
         return wpt_do_cmd_swap(vaddr);
 
     case WPT_CMD_REG:
-	    printk("[WPT_CMD_REG]\n");
+        printk("[WPT_CMD_REG]\n");
         return wpt_do_cmd_reg(vaddr);
 
     case WPT_CMD_UNREG:
-	    printk("[WPT_CMD_UNREG]\n");
+        printk("[WPT_CMD_UNREG]\n");
         return wpt_do_cmd_unreg(vaddr);
 
     case WPT_CMD_MAP:
-	    printk("[WPT_CMD_MAP]\n");
+        printk("[WPT_CMD_MAP]\n");
         return wpt_do_cmd_map(vaddr);
 
     case WPT_CMD_UNMAP:
-	    printk("[WPT_CMD_UNMAP]\n");
+        printk("[WPT_CMD_UNMAP]\n");
         return wpt_do_cmd_unmap(vaddr);
 
     case WPT_CMD_MAP_PDB:
-	    printk("[WPT_CMD_MAP_PDB]\n");
+        printk("[WPT_CMD_MAP_PDB]\n");
         return wpt_map_pqp_db(&cur_addr);
 
     case WPT_CMD_GET_PDB:
-	    printk("[WPT_CMD_GET_PDB]\n");
+        printk("[WPT_CMD_GET_PDB]\n");
         return wpt_get_pqp_db(vaddr);
 
     case WPT_CMD_ATS:
-	    printk("[WPT_CMD_ATS]\n");
+        printk("[WPT_CMD_ATS]\n");
         return wpt_do_cmd_ats(vaddr);
 
-    /* Coperd: admin command passthru */
+        /* Coperd: admin command passthru */
     case WPT_CMD_ADMIN_PASSTHRU_GETBBTBL:
         return wpt_do_cmd_passthru_getbbtbl(vaddr);
 
@@ -1078,7 +1072,6 @@ static void wpt_nvme_sanity_check(void)
     BUG_ON(sizeof(struct nvme_completion) != NVME_CQE_SZ);
 }
 
-/* Coperd: TODO: to optimize */
 static void wpt_init_pqp_buf(void)
 {
     qpbufp = qpbuf;
@@ -1247,30 +1240,29 @@ static ssize_t wpt_write_proc(struct file *file, const char __user *buffer,
     return count;
 }
 
-
 void wpt_deinit()
 {
 #ifdef RDMA_VQPS			
-	int i = 0;
-	struct wpt *wpt = WPT();
+    int i = 0;
+    struct wpt *wpt = WPT();
 
-	for (i = 0; i < NR_DBVMS; i++) {
-		struct rctx *rctx = &wpt->rctxs[i];
+    for (i = 0; i < NR_DBVMS; i++) {
+        struct rctx *rctx = &wpt->rctxs[i];
 
-		wpt_rdma_deinit(rctx);
+        wpt_rdma_deinit(rctx);
 
-		printk("[ql] disconnected VM %u\n", i);
-	}
+        printk("[ql] disconnected VM %u\n", i);
+    }
 #endif
 }
 
 static struct file_operations wpt_ops = {
-	.owner = THIS_MODULE,
-	.open = wpt_read_open,
-	.read = seq_read,
-	.llseek  = seq_lseek,
-	.release = single_release,
-	.write = wpt_write_proc,
+    .owner = THIS_MODULE,
+    .open = wpt_read_open,
+    .read = seq_read,
+    .llseek  = seq_lseek,
+    .release = single_release,
+    .write = wpt_write_proc,
 };
 
 static int wpt_create_proc_entry(void)
@@ -1436,7 +1428,6 @@ static void wpt_exit(void)
     }
     unregister_chrdev_region(MKDEV(WPT_MAJOR, 0), WPT_MAX_MINORS);
 
-
     kfree(wpt);
     printk("Coperd,===>Unregistered wpt char dev\n");
 }
@@ -1445,6 +1436,6 @@ module_init(wpt_init);
 module_exit(wpt_exit);
 
 MODULE_AUTHOR("Huaicheng Li <huaicheng@cs.uchicago.edu>");
-MODULE_LICENSE("GPL");
-MODULE_DESCRIPTION("kernel driver for LeapIO project");
+MODULE_LICENSE("GPLv2");
+MODULE_DESCRIPTION("LeapIO host (x86) kernel driver");
 MODULE_VERSION("0.1");
