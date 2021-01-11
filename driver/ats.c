@@ -203,8 +203,7 @@ static inline int ats_do_ats_vqp_cmd_prp1(struct kvm *kvm,
     return 0;
 }
 
-static inline int ats_do_ats_vqp_cmd_prp2(struct kvm *kvm,
-        struct nvme_command *cmd)
+static inline int ats_do_ats_vqp_cmd_prp2(struct kvm *kvm, struct nvme_command *cmd)
 {
     u64 prp2 = le64_to_cpu(cmd->rw.dptr.prp.prp2);
     u64 prp2_hpa = ats_do_ats_one_addr(kvm, prp2);
@@ -382,11 +381,9 @@ static int ats_do_ats_vqp_cmd_meta(struct kvm *kvm, struct nvme_command *cmd)
     struct nvme_ocrw_cmd *ocrw = &cmd->ocrw;
     u64 md, md_hpa;
 
-#if 1
     if (!is_ocrw_cmd(cmd)) {
         return 0;
     }
-#endif
 
     md = le64_to_cpu(ocrw->metadata);
     /* Coperd: allow users to not pass metadata for OCSSD command */
@@ -613,7 +610,6 @@ int ats_do_ats(struct ats *ats)
         /* read_unlock_irqrestore(&vqp->q_rwlock, flags); */
     }
 
-    /* Coperd: always return success for now */
     return 0;
 }
 
@@ -759,7 +755,6 @@ static inline void clear_sp(volatile u8 *sp_db)
 int ats_disable_vqp(struct ats *ats, struct wpt_qp *qp)
 {
     struct wpt *wpt = ats->wpt;
-    /* Coperd: TODO: consider VM-id and DEV-id as well in the future */
     struct nvme_qpair *vqp = ats_get_vqp(wpt, qp); //&ats->vqps[qid - 1];
     int qid = vqp->qid;
     //unsigned long flags;
@@ -893,7 +888,6 @@ struct nvme_qpair *ats_get_vqp(struct wpt *wpt, struct wpt_qp *qp)
 
     for (i = 0; i < wpt->ndbvms; i++) {
         printk("This DBVM's PID (local WPT) = %d\n", wpt->dbvms[i].pid);
-        //if (qdata->vm_pid == wpt->dbvms[i].pid) {
         if ((qdata->vm_pid == wpt->dbvms[i].pid) && (qdata->q_id == wpt->dbvms[i].qid)) {
             printk("VM's PID and DBVM's PID equal, same for QP IDs\n");
             printk("QID of this QP = %d\n", wpt->dbvms[i].qid);
