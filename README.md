@@ -46,15 +46,15 @@ Linux
 
 ```
 Driver - LeapIO modular/standalone driver for Linux
-  |- driver/pnvme.c                # Standalone NVMe representations
-  |- driver/rdma/                  # Kernel-level RDMA test driver
-  |- driver/wpt-qpmap.c            # LeapIO Queue Pair abstractions
-  |- driver/oct-core.c             # Kernel-level OpenChannel-SSD test driver
-  |- driver/ats.c                  # LeapIO address translation service
-  |- driver/wpt-dbg.c              # Debugging utilities
-  |- driver/wpt-core.c             # LeapIO host driver main
-  |- driver/rdma.c                 # Kernel-level RDMA utilities
-  |- driver/wpt-util.c             # LeapIO host driver utilies
+  |- pnvme.c                # Standalone NVMe representations
+  |- rdma/                  # Kernel-level RDMA test driver
+  |- wpt-qpmap.c            # LeapIO Queue Pair abstractions
+  |- oct-core.c             # Kernel-level OpenChannel-SSD test driver
+  |- ats.c                  # LeapIO address translation service
+  |- wpt-dbg.c              # Debugging utilities
+  |- wpt-core.c             # LeapIO host driver main
+  |- rdma.c                 # Kernel-level RDMA utilities
+  |- wpt-util.c             # LeapIO host driver utilies
 ```
 
 3. LeapIO Hypervisor (Modified QEMU/FEMU)
