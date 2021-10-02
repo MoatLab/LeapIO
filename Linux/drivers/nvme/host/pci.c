@@ -1806,7 +1806,7 @@ static void leap_disable_extra_io_queues(struct nvme_dev *dev, int queues)
 		int sent = 0, i = dev->max_qid + queues;
 
 		reinit_completion(&dev->ioq_wait);
- retry:
+retry:
 		timeout = ADMIN_TIMEOUT;
 		for (; i > dev->max_qid; i--, sent++)
 			if (leap_delete_queue(dev->queues[i], opcode)) break;

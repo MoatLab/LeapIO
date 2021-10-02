@@ -111,20 +111,21 @@ Runtime - (run on the SoC)
 
 ### Build LeapIO Components (Host kernel, driver, runtime and FEMU)
 
+(0). Clone the repo
+
+    $ git clone https://github.com/huaicheng/LeapIO.git
+
 (1). Compile host kernel
 
-
-    $ cp vSSD/conf/quantumleap-host-kernel-config vSSD/linux/.config
-    $ cd vSSD/linux
-    $ sudo make -j16 # change 16 to # of cores in your machine for best performance
+    $ cd LeapIO/Linux
+    $ cp configs/config-rt .config
+    $ make oldconfig
+    $ make -j16
     $ sudo make modules_install
     $ sudo make install
     $ sudo update-grub2
 
 Configure host grub file to boot newly compiled host kernel
-
-    $ sudo mv /etc/default/grub /etc/default/grub.bak
-    $ sudo cp vSSD/conf/host-etc-default-grub /etc/default/grub
 
 Doule check the line starting with ``GRUB_CMDLINE_LINUX`` contains the following options in ``/etc/default/grub``:
 
@@ -152,7 +153,7 @@ step.
 
 (2). Compile LeapIO WPT kernel module
 
-    $ cd Driver
+    $ cd LeapIO/Driver
     $ make
     # there should be a kernel module named “wpt.ko” generated, we will load it later
     # ls wpt.ko
@@ -162,7 +163,8 @@ step.
 
 Note: please change ``bs_size`` in ``hw/block/nvme.c`` to make it same as the value you get from ``sudo blockdev --getsz64 /dev/nvme0n1``
 
-    $ cd FEMU/build-femu
+    $ cd LeapIO/FEMU
+    $ mkdir -p build-femu
     # install dependencies for FEMU
     $ cp ../femu-scripts/pkgdep.sh .
     $ sudo ./pkgdep.sh
