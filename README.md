@@ -4,12 +4,26 @@
    / /   ___  ____ _____  /  _/ __ \
   / /   / _ \/ __ `/ __ \ / // / / /
  / /___/  __/ /_/ / /_/ // // /_/ / 
-/_____/\___/\__,_/ .___/___/\____/     -- Efficient and Portable Virtual NVMe Storage on ARM SoCs 
-                /_/                 
+/_____/\___/\__,_/ .___/___/\____/  -- Efficient and Portable Virtual NVMe Storage on ARM SoCs 
 
 ```
 
-Ok, code is being incrementally released, please stay tuned! You can fill in this [request form](https://docs.google.com/forms/d/e/1FAIpQLSeg-NpQ8hBlZGTgKVt72vOTo6HHYi9DX1_3DmioP2zTbe3cqw/viewform?vc=0&c=0&w=1&flr=0) to get notified when the entire code repo is ready. 
+
+### What is LeapIO?
+
+LeapIO is a new cloud storage stack that leverages ARM-based co-processors to
+offload complex storage services. LeapIO addresses many deployment challenges,
+such as hardware fungibility, software portability, virtualizability,
+composability, and efficiency. It uses a set of OS/software tech- niques and
+new hardware properties that provide a uniform address space across the x86 and
+ARM cores and expose virtual NVMe storage to unmodified guest VMs, at a
+performance that is competitive with bare-metal servers. LeapIO helps cloud
+providers cut the storage tax and improve utilization without sacrificing
+performance.
+
+For more detail, please read our
+[paper](https://huaicheng.github.io/p/asplos20-leapio.pdf) at ASPLOS'20
+
 
 Feel free to contact Huaicheng Li (hcli@cmu.edu) for any questions.
 
@@ -88,8 +102,11 @@ Runtime - (run on the SoC)
 ### Prerequiste
 
 
-- Server: A server with >16GB DRAM, >8cores, an NVMe SSD 
-- Broadcom StingRay SVK Board or a specialized VM plus a RDMA NIC (more details below)
+- A Server with the following components
+  - >16 GB DRAM
+  - >8 CPU cores
+  - an NVMe SSD 
+  - Broadcom StingRay SVK Board or a RDMA NIC (more details below)
 
 
 ### Build LeapIO Components (Host kernel, driver, runtime and FEMU)
@@ -197,12 +214,13 @@ Inside SoC-VM, we need to run ``socp``, first scp it from vSSD/soc-prog into SoC
     $ sudo insmod wpt.ko
 
 
-    # configure bridge rule to allow traffic through “fbr0”, needs to be done once 
+    
     $ sudo touch /usr/local/etc/qemu/bridge.conf
+    \# configure bridge rule to allow traffic through "fbr0", needs to be done once 
     $ echo "allow fbr0" | sudo tee /usr/local/etc/qemu/bridge.conf
 
 
-- Boot SoC-VM:
+- Boot SoCVM:
 
 
     $ cd FEMU/build-femu
