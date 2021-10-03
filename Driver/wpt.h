@@ -211,12 +211,12 @@ struct nvme_completion {
  * from host NVMe driver
  */
 struct leap_qpbuf {
-	int qid;
-	int q_depth;
-	u64 sq_paddr;	/* SQ physical address */
-	u64 cq_paddr;	/* CQ physical address */
-	u64 db_paddr;	/* Doorbell physical address */
-	int stride;
+    int qid;
+    int q_depth;
+    u64 sq_paddr;	/* SQ physical address */
+    u64 cq_paddr;	/* CQ physical address */
+    u64 db_paddr;	/* Doorbell physical address */
+    int stride;
     int lba_shift;
     int mdts;
     int nr_io_queues_leap;
