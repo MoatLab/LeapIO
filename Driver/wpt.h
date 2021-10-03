@@ -328,7 +328,7 @@ struct nvme_nvm_getbbtbl {
     u8 flags;
     u16 command_id;
     u32 nsid;
-    u64	rsvd[2];
+    u64 rsvd[2];
     u64 prp1;
     u64 prp2;
     u64 spba;
@@ -522,7 +522,7 @@ int wpt_do_cmd_swap(unsigned long vaddr);
 extern unsigned int use_rdma_for_vqp;
 
 extern int nvme_submit_sync_cmd(struct request_queue *q, struct nvme_command *c,
-        void *buf, unsigned buflen);
+                                void *buf, unsigned buflen);
 
 
 #endif
