@@ -5,6 +5,7 @@
   / /   / _ \/ __ `/ __ \ / // / / /
  / /___/  __/ /_/ / /_/ // // /_/ / 
 /_____/\___/\__,_/ .___/___/\____/  -- Efficient and Portable Virtual NVMe Storage on ARM SoCs 
+                /_/                 
 
 ```
 
@@ -111,11 +112,11 @@ Runtime - (run on the SoC)
 
 ### Build LeapIO Components (Host kernel, driver, runtime and FEMU)
 
-(0). Clone the repo
+0. Clone the repo
 
     $ git clone https://github.com/huaicheng/LeapIO.git
 
-(1). Compile host kernel
+1. Compile host kernel
 
     $ cd LeapIO/Linux
     $ cp configs/config-rt .config
@@ -151,7 +152,7 @@ step.
     sudo nvme id-ctrl /dev/nvm0n1  | grep -i mdts
 
 
-(2). Compile LeapIO WPT kernel module
+2. Compile LeapIO WPT kernel module
 
     $ cd LeapIO/Driver
     $ make
@@ -159,7 +160,7 @@ step.
     # ls wpt.ko
 
 
-(3). Compile FEMU
+3. Compile FEMU
 
 Note: please change ``bs_size`` in ``hw/block/nvme.c`` to make it same as the value you get from ``sudo blockdev --getsz64 /dev/nvme0n1``
 
@@ -177,7 +178,7 @@ Note: please change ``bs_size`` in ``hw/block/nvme.c`` to make it same as the va
     $ ls x86_64-softmmu/qemu-system-x86_64
 
 
-(4). Prepare VM images to serve as the user VM and the emulated SoC (referred to as "SoC-VM", it is needed when Broadcom SVK SoC is not available):
+4. Prepare VM images to serve as the user VM and the emulated SoC (referred to as "SoC-VM", it is needed when Broadcom SVK SoC is not available):
 
 
     # Download Ubuntu 16.04 server ISO file
@@ -197,7 +198,7 @@ Note: please change ``bs_size`` in ``hw/block/nvme.c`` to make it same as the va
     # Now, socvm.qcow2 is ready to be used with FEMU 
 
 
-(5). Compile LeapIO runtime (note this step needs to be done inside the VMs, refer back to it later after the VMs are up)
+5. Compile LeapIO runtime (note this step needs to be done inside the VMs, refer back to it later after the VMs are up)
 
 
 Inside SoC-VM, we need to run ``socp``, first scp it from vSSD/soc-prog into SoC-VM if not, then
